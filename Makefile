@@ -11,7 +11,6 @@ dependencies:
 
 build: clean
 	GOOS=linux go build -o dist/handler ./...
-	zip dist/handler.zip dist/handler
 
 configure:
 	aws s3api create-bucket \

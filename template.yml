@@ -9,7 +9,7 @@ Resources:
       Tracing: Active
       Environment:
         Variables:
-          URL: http://www.mynewsdesk.com/services/pressroom/list/123d405e0dfaf99b9c3cae178ca0e124/?type_of_media=pressrelease&format=xml
+          URL: http://www.mynewsdesk.com/services/pressroom/list/123d405e0dfaf99b9c3cae178ca0e124/?type_of_media=pressrelease&format=rss
   Role: 
     Type: AWS::IAM::Role
     Properties: 
