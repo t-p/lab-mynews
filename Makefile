@@ -8,12 +8,14 @@ clean:
 dependencies:
 	go get github.com/SlyMarbo/rss
 	go get github.com/axgle/mahonia
+	go get github.com/aws/aws-lambda-go/events
+	go get github.com/aws/aws-lambda-go/lambda
 
 build: clean
 	GOOS=linux go build -o dist/handler ./...
 
 configure:
-	aws s3api create-bucket \
+	@aws s3api create-bucket \
 		--profile $(PROFILE) \
 		--bucket $(AWS_BUCKET_NAME) \
 		--create-bucket-configuration LocationConstraint=eu-west-1
@@ -42,6 +44,11 @@ describe:
 
 outputs:
 	@make describe | jq -r '.Stacks[0].Outputs'
+
+local: build
+	@aws-sam-local local invoke "Handler" \
+		-e tests/cloud_watch_sample_event.json \
+		--profile $(PROFILE) \
 
 create-api:
 	@aws appsync create-graphql-api \
