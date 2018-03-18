@@ -11,15 +11,18 @@ dependencies:
 
 build: clean
 	GOOS=linux go build -o dist/handler ./...
+	zip dist/handler.zip dist/handler
 
 configure:
 	aws s3api create-bucket \
+		--profile $(PROFILE) \
 		--bucket $(AWS_BUCKET_NAME) \
-		--region $(AWS_REGION)
+		--create-bucket-configuration LocationConstraint=eu-west-1
 
 package: build
 	@aws cloudformation package \
 		--template-file template.yml \
+		--profile $(PROFILE) \
 		--s3-bucket $(AWS_BUCKET_NAME) \
 		--region $(AWS_REGION) \
 		--output-template-file package.yml
@@ -27,14 +30,16 @@ package: build
 deploy:
 	@aws cloudformation deploy \
 		--template-file package.yml \
+		--profile $(PROFILE) \
 		--region $(AWS_REGION) \
 		--capabilities CAPABILITY_IAM \
 		--stack-name $(AWS_STACK_NAME)
 
 describe:
 	@aws cloudformation describe-stacks \
-			--region $(AWS_REGION) \
-			--stack-name $(AWS_STACK_NAME) \
+		--profile $(PROFILE) \
+		--region $(AWS_REGION) \
+		--stack-name $(AWS_STACK_NAME) 
 
 outputs:
 	@make describe | jq -r '.Stacks[0].Outputs'
@@ -47,12 +52,16 @@ create-api:
 create-api-schema:
 	@aws appsync start-schema-creation \
 		--api-id $(API_ID) \
+		--profile $(PROFILE) \
+		--region $(AWS_REGION) \
 		--definition "$(SCHEMA)" | jq
 
 create-api-data-source:
 	@aws appsync create-data-source \
 		--api-id $(API_ID) \
-		--name RSSProxy \
+		--profile $(PROFILE) \
+		--region $(AWS_REGION) \
+		--name myNews \
 		--type AWS_LAMBDA \
 		--service-role-arn $(ROLE) \
 		--lambda-config "lambdaFunctionArn=$(LAMBDA)" | jq
@@ -60,9 +69,11 @@ create-api-data-source:
 create-api-resolver:
 	@aws appsync create-resolver \
 		--api-id $(API_ID) \
+		--profile $(PROFILE) \
+		--region $(AWS_REGION) \
 		--type-name Query \
 		--field-name feed \
-		--data-source-name RSSProxy \
+		--data-source-name myNews \
 		--request-mapping-template '{ "version" : "2017-02-28", "operation": "Invoke", "payload": $$util.toJson($$context.arguments) }' \
 		--response-mapping-template '$$util.toJson($$context.result)' | jq
 
