@@ -1,4 +1,4 @@
-# Mynews
+# your name
 
 ## Instructions
 
