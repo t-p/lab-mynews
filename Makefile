@@ -2,6 +2,7 @@ include .env
 
 SCHEMA=`cat schema.graphql`
 
+# Go
 clean:
 	rm -rf dist
 
@@ -14,11 +15,18 @@ dependencies:
 build: clean
 	GOOS=linux go build -o dist/handler ./...
 
+# run local
+local: build
+	@aws-sam-local local invoke "Handler" \
+		-e tests/cloud_watch_sample_event.json \
+		--profile $(PROFILE) 
+
+# Lambda
 configure:
 	@aws s3api create-bucket \
 		--profile $(PROFILE) \
 		--bucket $(AWS_BUCKET_NAME) \
-		--create-bucket-configuration LocationConstraint=eu-west-1
+		--create-bucket-configuration LocationConstraint=$(AWS_REGION)
 
 package: build
 	@aws cloudformation package \
@@ -45,11 +53,7 @@ describe:
 outputs:
 	@make describe | jq -r '.Stacks[0].Outputs'
 
-local: build
-	@aws-sam-local local invoke "Handler" \
-		-e tests/cloud_watch_sample_event.json \
-		--profile $(PROFILE) \
-
+# AppSync
 create-api:
 	@aws appsync create-graphql-api \
 		--name $(AWS_STACK_NAME) \
