@@ -5,7 +5,7 @@
 ## Description
 
 AppSync is a managed Graphql server. The proxy resolver is written in Go.
-SAML is used to generate the cloudformation stack and everything is managed via Makefile.
+AWS SAM is used to generate the cloudformation stack and everything is managed via Makefile.
 
 ## Requirements
 
